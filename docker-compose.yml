@@ -1,0 +1,11 @@
+version: '3'
+services:
+  rancher-server:
+    image: rancher/server
+    container_name: rancher-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - /root/docker/ranchor/mysql:/var/lib/mysql
+      - /root/docker/ranchor/mysql-log:/var/log/mysql
+      - /root/docker/ranchor/cattle:/var/log/cattle
