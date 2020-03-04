@@ -21,3 +21,44 @@ egistry:
 
 # Curl Command
 #curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry.f1soft.com.np/v2/fonecredit/fcnotification/manifests/$(curl -s "registry.f1soft.com.np/v2/fonecredit/fcnotification/tags/list" | jq -r '.tags[0]')" | awk '$1 == "Docker-Content-Digest:" { print $2 }' | tr -d $'\r' \
+
+
+
+[root@minio registry]# cat curl.sh
+x=$(curl -X GET registry.f1soft.com.np/v2/f1registry/tags/list -s|jq -r .tags[0])
+
+y=$(curl -v --silent -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -X
+GET registry.f1soft.com.np/v2/f1registry/manifests/${x} 2>&1 | grep Docker-Content-Digest | awk '{print ($3)}')
+
+curl -v --silent -H "Accept: application/vnd.docker.distribution.manifest.v2+json" -X DELETE registry.f1soft.com.np/v2/f1registry/manifests/$~[y]
+[root@minio registry]# cat del.sh
+registry=registry.f1soft.com.np
+name=$1
+#name=f1registry
+curl -X DELETE "${registry}/v2/${name}/manifests/$(
+    curl -I \
+        -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+        "https://${registry}/v2/${name}/manifests/$(
+            curl "${registry}/v2/${name}/tags/list" | jq -r '.tags[0]'
+        )" \
+    | awk '$1 == "Docker-Content-Digest:" { print $2 }' \
+    | tr -d $'\r' \
+)"
+[root@minio registry]# cat images-curl.sh
+registry=registry.f1soft.com.np
+#images=(fonecredit/fcadmin fonecredit/fccustomer fonecredit/fcnotification)
+images=(fonecredit/{fcadmin,fccustomer,fcnotification,fcbank,fcbankmodule,fcbankjobscheduler})
+echo "${images[@]}"
+#name=f1registry
+for name in "${images[@]}"
+do
+curl -s -X  DELETE "${registry}/v2/${name}/manifests/$(
+curl -s -I \
+-H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+"https://${registry}/v2/${name}/manifests/$(
+curl -s "${registry}/v2/${name}/tags/list" | jq -r '.tags[0]'
+)" \
+| awk '$1 == "Docker-Content-Digest:" { print $2 }' \
+| tr -d $'\r' \
+)"
+done
