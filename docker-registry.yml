@@ -1,0 +1,23 @@
+egistry:
+  restart: always
+  image: registry:2
+  ports:
+    - 5000:5000
+    - "443:443"
+  expose:
+    - 443
+  environment:
+    REGISTRY_HTTP_TLS_CERTIFICATE: /var/lib/registry/certs/f1soft.com.np.cert
+    REGISTRY_HTTP_TLS_KEY: /var/lib/registry/certs/f1soft.com.np.key
+    REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    REGISTRY_HTTP_ADDR: "0.0.0.0:443"
+  volumes:
+    - /data/f1registry:/var/lib/registry
+  container_name: f1registry
+
+#docker run -d   --restart=always   --name f1registry   -v /data/f1registry:/var/lib/registry   -e REGISTRY_HTTP_ADDR=0.0.0.0:443   -e REGISTRY_HTTP_TLS_CERTIFICATE=/var/lib/registry/certs/f1soft.com.np.crt   -e REGISTRY_HTTP_TLS_KEY=/var/lib/registry/certs/f1soft.com.np.key   -p 443:443   registry:2
+
+
+
+# Curl Command
+#curl -s -I -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "https://registry.f1soft.com.np/v2/fonecredit/fcnotification/manifests/$(curl -s "registry.f1soft.com.np/v2/fonecredit/fcnotification/tags/list" | jq -r '.tags[0]')" | awk '$1 == "Docker-Content-Digest:" { print $2 }' | tr -d $'\r' \
